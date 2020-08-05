@@ -26,8 +26,13 @@ type dnsServer struct {
 }
 
 func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
+	var ip net.IP
+	addr := w.RemoteAddr().(*net.UDPAddr)
+	ip = make(net.IP, len(addr.IP))
 	m := dns.Msg{}
 	m.SetReply(r)
+	log.Println(ip)
+	log.Println(r)
 	switch r.Question[0].Qtype {
 	case dns.TypeA:
 		domain := m.Question[0].Name

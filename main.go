@@ -45,11 +45,9 @@ func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
 	e.SourceNetmask = 32	// 32 for IPV4, 128 for IPv6
 	e.SourceScope = 0
 	e.Address = realIP	// for IPv4
-
-	r.Extra = append(r.Extra, o)
-
-	// e.Address = net.ParseIP("2001:7b8:32a::2")	// for IPV6
 	o.Option = append(o.Option, e)
+	r.Extra = append(r.Extra, o)
+	// e.Address = net.ParseIP("2001:7b8:32a::2")	// for IPV6
 
 	m.SetReply(r)
 	log.Println(realIP)

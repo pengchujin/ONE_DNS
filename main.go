@@ -11,7 +11,7 @@ var records = map[string]string{
 }
 
 func main () {
-	server := &dns.Server{Addr: "127.0.0.1:5555", Net: "udp" }
+	server := &dns.Server{Addr: "0.0.0.0:5555", Net: "udp" }
 	server.Handler = &dnsServer{}
 	log.Println("Booting DNS Server......")
 	err := server.ListenAndServe()
@@ -26,12 +26,17 @@ type dnsServer struct {
 }
 
 func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
-	var ip net.IP
-	addr := w.RemoteAddr().(*net.UDPAddr)
-	ip = make(net.IP, len(addr.IP))
+	var realIP net.IP
+	if addr, ok := w.RemoteAddr().(*net.UDPAddr); ok {
+		realIP = make(net.IP, len(addr.IP))
+		copy(realIP, addr.IP)
+	} else if addr, ok := w.RemoteAddr().(*net.TCPAddr); ok {
+		realIP = make(net.IP, len(addr.IP))
+		copy(realIP, addr.IP)
+	}
 	m := dns.Msg{}
 	m.SetReply(r)
-	log.Println(ip)
+	log.Println(realIP)
 	log.Println(r)
 	switch r.Question[0].Qtype {
 	case dns.TypeA:

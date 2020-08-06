@@ -49,6 +49,7 @@ func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
 	}
 	log.Println(realIP)
 	m := dns.Msg{}
+	// e.Address = net.ParseIP("2001:7b8:32a::2")	// for IPV6
 
 	o := new(dns.OPT)
 	o.Hdr.Name = "."
@@ -61,7 +62,6 @@ func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
 	e.Address = realIP	// for IPv4
 	o.Option = append(o.Option, e)
 	r.Extra = append(r.Extra, o)
-	// e.Address = net.ParseIP("2001:7b8:32a::2")	// for IPV6
 
 	m.SetReply(r)
 

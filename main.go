@@ -6,6 +6,7 @@ import (
 	"net"
 	"context"
 	"github.com/go-redis/redis/v8"
+	"github.com/oschwald/geoip2-golang"
 	"encoding/json"
 )
 
@@ -32,6 +33,9 @@ type dnsServer struct {
 
 func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
 
+	db, err := geoip2.Open("GeoLite2-City.mmdb")
+	defer db.Close()
+
 	opt, err := redis.ParseURL("redis://localhost:6379/0")
 	if err != nil {
 			panic(err)
@@ -48,6 +52,13 @@ func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
 		copy(realIP, addr.IP)
 	}
 	log.Println(realIP)
+
+	record, err := db.City(realIP)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(record.City.Names["pt-BR"])
+
 	m := dns.Msg{}
 	// e.Address = net.ParseIP("2001:7b8:32a::2")	// for IPV6
 
@@ -129,19 +140,19 @@ func (this *dnsServer) ServeDNS (w dns.ResponseWriter, r *dns.Msg) {
 		}
 	} 
 	
-	m.Authoritative = true
+	r.Authoritative = true
 	dnsA := []dns.A{}
 	err = json.Unmarshal([]byte(val), &dnsA)
 	log.Println(dnsA)
 
 	for _, value := range dnsA {
-		m.Answer = append(m.Answer, &value)
+		r.Answer = append(r.Answer, &value)
 	}
 
 	if err != nil {
 		log.Println(err)
 	}
-	m.Authoritative = true
-	w.WriteMsg(&m)
+
+	w.WriteMsg(r)
 
 }

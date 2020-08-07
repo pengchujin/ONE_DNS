@@ -17,7 +17,7 @@ var records = map[string]string{
 }
 
 func main () {
-	server := &dns.Server{Addr: "0.0.0.0:5555", Net: "udp" }
+	server := &dns.Server{Addr: "0.0.0.0:53", Net: "udp" }
 	server.Handler = &dnsServer{}
 	log.Println("Booting DNS Server......")
 	err := server.ListenAndServe()
